@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard XPT</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="header">
+      <img src="image.png" alt="Logo da Empresa" class="logo">
+      <h1>XPT – ZÉ DOCA</h1>
+    </div>
+
+    <input type="file" id="csvInput" accept=".csv" />
+
+   
+
+    <!-- KPI CARDS -->
+    <div class="kpis">
+      <div class="kpi"><span>Total</span><strong id="kpiTotal">0</strong></div>
+      <div class="kpi"><span>Entregues</span><strong id="kpiDelivered">0</strong></div>
+      <div class="kpi"><span>Pendentes</span><strong id="kpiPending">0</strong></div>
+      <div class="kpi" id="kpiSlaCard">
+        <span>SLA</span>
+        <strong id="kpiSla">0%</strong>
+      </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="charts">
+      <div class="chart">
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="chart">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+       <!-- FILTROS -->
+<div class="filters">
+
+  <div class="filter-group">
+    <label for="driverSelect">Entregador</label>
+    <select id="driverSelect">
+      <option value="">Todos</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="citySelect">Cidade</label>
+    <select id="citySelect">
+      <option value="">Todas</option>
+    </select>
+  </div>
+</div>
+
+     <!-- TABELA POR CIDADE -->
+<div class="table-container">
+  <h2>Status por Cidade</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Cidade</th>
+        <th>Total</th>
+        <th>Entregues</th>
+        <th>Pendentes</th>
+        <th>SLA</th>
+      </tr>
+    </thead>
+    <tbody id="cityTableBody"></tbody>
+  </table>
+</div>
+
+
+
+ 
+
+</div>
+
+  </div>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>
