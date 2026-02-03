@@ -6,8 +6,31 @@ export function renderCharts(data, mode = 'default') {
   if (pieChart) pieChart.destroy();
   if (barChart) barChart.destroy();
 
+  // 🔤 Mapa de nomes amigáveis
+  const statusLabelsMap = {
+    Delivered: 'Entregue',
+    Delivering: 'Saiu para Entrega',
+    Hub_Assigned: 'Hub Atribuído',
+    Hub_Received: 'Recebido no Hub',
+    LM_Hub_InTransit: 'Em Transferência',
+    OnHold: 'Em Espera'
+  };
+
+  // 🧹 REMOVE undefined / vazio
+  const filteredStatus = Object.entries(data.statusMap)
+    .filter(([status]) => status && status !== 'undefined');
+
+  const statusLabels = filteredStatus.map(
+    ([status]) => statusLabelsMap[status] || status
+  );
+
+  const statusValues = filteredStatus.map(
+    ([, value]) => value
+  );
+
   // 🟢 MODO PADRÃO → PIZZA + BARRAS DE STATUS
   if (mode === 'default') {
+
     pieChart = new Chart(document.getElementById('pieChart'), {
       type: 'pie',
       data: {
@@ -26,9 +49,10 @@ export function renderCharts(data, mode = 'default') {
     barChart = new Chart(document.getElementById('barChart'), {
       type: 'bar',
       data: {
-        labels: Object.keys(data.statusMap),
+        labels: statusLabels,
         datasets: [{
-          data: Object.values(data.statusMap),
+          label: 'Status dos Pedidos',
+          data: statusValues,
           backgroundColor: '#ff0000'
         }]
       },
@@ -46,6 +70,7 @@ export function renderCharts(data, mode = 'default') {
 
   // 🔴 MODO CIDADE → BARRAS EMPILHADAS POR ENTREGADOR
   if (mode === 'drivers') {
+
     pieChart = new Chart(document.getElementById('pieChart'), {
       type: 'bar',
       data: {
