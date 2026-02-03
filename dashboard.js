@@ -116,20 +116,22 @@ function applyFilters() {
   let filtered = [...rawData];
 
   if (driverSelect.value) {
-    filtered = filtered.filter(r => r['Driver Name'] === driverSelect.value);
+    filtered = filtered.filter(
+      r => r['Driver Name'] === driverSelect.value
+    );
   }
 
   if (citySelect.value) {
-    filtered = filtered.filter(r => cityMap[r['Postal Code']] === citySelect.value);
+    filtered = filtered.filter(
+      r => cityMap[r['Postal Code']] === citySelect.value
+    );
   }
 
+  // 🔥 ESSENCIAL
   updateDashboard(filtered);
-
-  // 🔥 SE SELECIONAR CIDADE → GRÁFICO EMPILHADO
-  if (citySelect.value) {
-    renderDriversByCity(filtered);
-  }
+  renderCityTable(filtered);
 }
+
 
 /* LOAD CSV */
 input.addEventListener('change', async (e) => {
@@ -152,3 +154,60 @@ input.addEventListener('change', async (e) => {
 
 driverSelect.addEventListener('change', applyFilters);
 citySelect.addEventListener('change', applyFilters);
+
+window.printAndCopy = async function () {
+  const footer = document.querySelector('.footer');
+
+  // Guarda o estilo original
+  const originalPosition = footer.style.position;
+  const originalBottom = footer.style.bottom;
+
+  // 🔽 Coloca o footer no fluxo normal (fim da página)
+  footer.style.position = 'static';
+  footer.style.bottom = 'auto';
+
+  const canvas = await html2canvas(document.body, {
+    backgroundColor: '#000',
+    scale: 2,
+    scrollY: -window.scrollY
+  });
+
+  // 🔁 Restaura o footer fixo
+  footer.style.position = originalPosition || 'fixed';
+  footer.style.bottom = originalBottom || '0';
+
+  canvas.toBlob(async (blob) => {
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob })
+      ]);
+
+      alert('✅ Print copiado para a área de transferência!');
+    } catch (err) {
+      alert('❌ Erro ao copiar o print');
+      console.error(err);
+    }
+  });
+};
+
+const btnHome = document.getElementById('btnHome');
+const btnCity = document.getElementById('btnCity');
+
+const homePage = document.getElementById('homePage');
+const cityPage = document.getElementById('cityPage');
+
+btnHome.addEventListener('click', () => {
+  homePage.style.display = 'block';
+  cityPage.style.display = 'none';
+
+  btnHome.classList.add('active');
+  btnCity.classList.remove('active');
+});
+
+btnCity.addEventListener('click', () => {
+  homePage.style.display = 'none';
+  cityPage.style.display = 'block';
+
+  btnCity.classList.add('active');
+  btnHome.classList.remove('active');
+});
