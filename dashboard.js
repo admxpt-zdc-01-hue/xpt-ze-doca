@@ -45,7 +45,7 @@ function updateDashboard(data) {
   document.getElementById('kpiSla').innerText = result.sla + '%';
 
   applySlaColor(result.sla);
-  renderCharts(result);
+  renderCharts(result, 'default');
 }
 
 /* TABLE */
@@ -77,6 +77,40 @@ function renderCityTable(data) {
   });
 }
 
+/* 🔥 GRÁFICO EMPILHADO DE ENTREGADORES POR CIDADE */
+function renderDriversByCity(data) {
+  const map = {};
+
+  data.forEach(row => {
+    const driver = row['Driver Name'];
+    const status = row['Status']?.toString().toLowerCase() || '';
+
+    if (!driver) return;
+
+    if (!map[driver]) {
+      map[driver] = { delivered: 0, pending: 0 };
+    }
+
+    if (
+      (status === 'delivered' || status.endsWith('_delivered')) &&
+      !status.includes('return')
+    ) {
+      map[driver].delivered++;
+    } else {
+      map[driver].pending++;
+    }
+  });
+
+  const labels = Object.keys(map);
+  const delivered = labels.map(d => map[d].delivered);
+  const pending = labels.map(d => map[d].pending);
+
+  renderCharts(
+    { labels, delivered, pending },
+    'drivers'
+  );
+}
+
 /* FILTERS */
 function applyFilters() {
   let filtered = [...rawData];
@@ -90,6 +124,11 @@ function applyFilters() {
   }
 
   updateDashboard(filtered);
+
+  // 🔥 SE SELECIONAR CIDADE → GRÁFICO EMPILHADO
+  if (citySelect.value) {
+    renderDriversByCity(filtered);
+  }
 }
 
 /* LOAD CSV */
@@ -99,7 +138,6 @@ input.addEventListener('change', async (e) => {
 
   rawData = await processCSV(file);
 
-  // DROPDOWNS
   const drivers = [...new Set(rawData.map(r => r['Driver Name']).filter(Boolean))];
   driverSelect.innerHTML = '<option value="">Todos</option>';
   drivers.forEach(d => driverSelect.innerHTML += `<option>${d}</option>`);
