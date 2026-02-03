@@ -5,17 +5,24 @@ export function calculateMetrics(data) {
   const statusMap = {};
 
   data.forEach(row => {
-    const rawStatus = row['Status'];
-    if (!rawStatus) return;
+
+    const status = row['Status'];
+
+    // 🔴 ignora linhas sem status
+    if (!status || status.toString().trim() === '') return;
+
+    const cleanStatus = status.toString().trim();
 
     total++;
 
-    const status = rawStatus.toString().trim().toLowerCase();
-    statusMap[rawStatus] = (statusMap[rawStatus] || 0) + 1;
+    // conta status
+    statusMap[cleanStatus] = (statusMap[cleanStatus] || 0) + 1;
 
+    // regra de entregue
+    const statusLower = cleanStatus.toLowerCase();
     if (
-      (status === 'delivered' || status.endsWith('_delivered')) &&
-      !status.includes('return')
+      statusLower === 'delivered' ||
+      statusLower.endsWith('_delivered')
     ) {
       delivered++;
     }
@@ -24,5 +31,11 @@ export function calculateMetrics(data) {
   const pending = total - delivered;
   const sla = total > 0 ? ((delivered / total) * 100).toFixed(2) : 0;
 
-  return { total, delivered, pending, sla, statusMap };
+  return {
+    total,
+    delivered,
+    pending,
+    sla,
+    statusMap
+  };
 }
