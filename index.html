@@ -12,20 +12,48 @@
   <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
+
+<!-- html2canvas -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<!-- seu JS -->
+<script type="module" src="dashboard.js"></script>
+
+
 <body>
+
+<div class="top-actions">
+
+  <div class="nav-buttons">
+    <button id="btnHome" class="active">Início</button>
+    <button id="btnCity">Status por Cidade</button>
+  </div>
+
+  <button class="print-btn" onclick="printAndCopy()">
+    📸 Copiar print
+  </button>
+
+</div>
+
 
   <div class="container">
 
     <div class="header">
       <img src="image.png" alt="Logo da Empresa" class="logo">
-      <h1>XPT – ZÉ DOCA</h1>
+      
     </div>
 
     <input type="file" id="csvInput" accept=".csv" />
 
+    
+
    
+<section id="homePage">
 
     <!-- KPI CARDS -->
 <div class="kpis">
@@ -47,7 +75,7 @@
   </div>
 
   <div class="kpi">
-    <div class="kpi-icon">🛵</div>
+    <div class="kpi-icon">🛵💨</div>
     <div class="kpi-content">
       <strong id="kpiPending">0</strong>
       <span>Pendentes</span>
@@ -93,6 +121,10 @@
   </div>
 </div>
 
+</section>
+
+<section id="cityPage" style="display: none;">
+
      <!-- TABELA POR CIDADE -->
 <div class="table-container">
   <h2>Status por Cidade</h2>
@@ -110,6 +142,7 @@
   </table>
 </div>
 
+</section>
 
 
  
@@ -118,13 +151,11 @@
 
   </div>
 
-  <script type="module" src="dashboard.js"></script>
+
 
   <footer class="footer">
-  <span>© 2026 <strong>NJ SYSTEMS</strong> · v1.0</span>
+  <span>© 2026 <strong>NJ SYSTEM</strong> · v2.0</span>
 </footer>
 
 </body>
 </html>
-
-
