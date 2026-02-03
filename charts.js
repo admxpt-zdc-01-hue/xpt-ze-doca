@@ -1,22 +1,23 @@
-let pieChart;
 let barChart;
+let slaDriverChart;
 
 export function renderCharts(data, mode = 'default') {
 
-  if (pieChart) pieChart.destroy();
   if (barChart) barChart.destroy();
+  if (slaDriverChart) slaDriverChart.destroy();
 
-  // 🔤 Mapa de nomes amigáveis
+  /* ===============================
+     🔤 STATUS DOS PEDIDOS
+  =============================== */
   const statusLabelsMap = {
     Delivered: 'Entregue',
-    Delivering: 'Saiu para Entrega',
+    Delivering: 'Em Rota',
     Hub_Assigned: 'Hub Atribuído',
     Hub_Received: 'Recebido no Hub',
     LM_Hub_InTransit: 'Em Transferência',
-    OnHold: 'Em Espera'
+    OnHold: 'Ocorrência'
   };
 
-  // 🧹 REMOVE undefined / vazio
   const filteredStatus = Object.entries(data.statusMap)
     .filter(([status]) => status && status !== 'undefined');
 
@@ -28,74 +29,97 @@ export function renderCharts(data, mode = 'default') {
     ([, value]) => value
   );
 
-  // 🟢 MODO PADRÃO → PIZZA + BARRAS DE STATUS
-  if (mode === 'default') {
-
-    pieChart = new Chart(document.getElementById('pieChart'), {
-      type: 'pie',
-      data: {
-        labels: ['Entregues', 'Pendentes'],
-        datasets: [{
-          data: [data.delivered, data.pending],
-          backgroundColor: ['#ff0000', '#333333']
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
+  barChart = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: statusLabels,
+      datasets: [{
+        label: 'Status dos Pedidos',
+        data: statusValues,
+        backgroundColor: '#ff0000'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true }
       }
-    });
+    }
+  });
 
-    barChart = new Chart(document.getElementById('barChart'), {
-      type: 'bar',
-      data: {
-        labels: statusLabels,
-        datasets: [{
-          label: 'Status dos Pedidos',
-          data: statusValues,
-          backgroundColor: '#ff0000'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true }
-        }
-      }
-    });
+  /* ===============================
+     🟢 SLA POR ENTREGADOR (TODOS)
+  =============================== */
 
-    return;
-  }
+  const sortedDrivers = data.driverSLA
+    .filter(d => d.name && !isNaN(d.sla))
+    .sort((a, b) => b.sla - a.sla);
 
-  // 🔴 MODO CIDADE → BARRAS EMPILHADAS POR ENTREGADOR
-  if (mode === 'drivers') {
+  const fullNames = sortedDrivers.map(d => d.name);
+  const shortNames = sortedDrivers.map(d =>
+    d.name.split(' ').slice(0, 1).join(' ')
+  );
 
-    pieChart = new Chart(document.getElementById('pieChart'), {
-      type: 'bar',
-      data: {
-        labels: data.labels,
-        datasets: [
-          {
-            label: 'Entregues',
-            data: data.delivered,
-            backgroundColor: '#ff0000'
-          },
-          {
-            label: 'Pendentes',
-            data: data.pending,
-            backgroundColor: '#333333'
+  /* 🔥 CONTROLE DE ALTURA + SCROLL */
+  const pieCanvas = document.getElementById('pieChart');
+  const chartWrapper = pieCanvas.parentElement;
+
+  chartWrapper.style.height = '420px'; // área visível
+  pieCanvas.style.height = (sortedDrivers.length * 34) + 'px'; // altura real
+
+  slaDriverChart = new Chart(pieCanvas, {
+    type: 'bar',
+    data: {
+      labels: shortNames,
+      datasets: [{
+        label: 'SLA por Entregador (%)',
+        data: sortedDrivers.map(d => d.sla),
+        backgroundColor: sortedDrivers.map(d =>
+          d.sla >= 98 ? '#22c55e' :
+          d.sla >= 95 ? '#facc15' :
+          '#ef4444'
+        ),
+        borderRadius: 6,
+        barThickness: 18
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+
+      scales: {
+        y: {
+          ticks: {
+            autoSkip: false,        // 🔥 evita sumir nomes
+            font: { size: 12 }
           }
-        ]
+        },
+        x: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            callback: value => value + '%'
+          }
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { stacked: true },
-          y: { stacked: true, beginAtZero: true }
+
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            title: function (items) {
+              return fullNames[items[0].dataIndex]; // nome completo
+            },
+            label: function (context) {
+              return `SLA: ${context.raw}%`;
+            }
+          }
         }
       }
-    });
-  }
+    }
+  });
 }
